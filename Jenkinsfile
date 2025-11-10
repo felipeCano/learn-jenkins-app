@@ -76,10 +76,10 @@ pipeline {
                 }
             }
             steps {
-                echo 'Hello World'
+                echo 'Hello Deply'
                 sh '''
-                   npm install -g netlify-cli
-                   netlify --version
+                   npm install netlify-cli
+                   node_modules/.bin/netlify --version
                 '''
             }
         }
