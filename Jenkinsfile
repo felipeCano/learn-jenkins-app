@@ -62,7 +62,6 @@ pipeline {
                     node_modules/.bin/serve -s build &
                     sleep 10
                     npx playwright test --reporter=html
-                    echo "We comment reporter for playwright. we need to test deploy"
                 '''
                     }
                     post {
@@ -88,6 +87,7 @@ pipeline {
                    node_modules/.bin/netlify --version
                    echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
                    node_modules/.bin/netlify status
+                   node_modules/.bin/netlify deploy --dir=build --prod
                 '''
             }
         }
