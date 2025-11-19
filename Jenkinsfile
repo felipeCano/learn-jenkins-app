@@ -1,15 +1,15 @@
 pipeline {
     agent any
 
-    environment{
+    environment {
         NETLIFY_SITE_ID = '84d9a7ec-98e0-4686-bcf0-d94778ca1389'
         NETLIFY_AUTH_TOKEN = credentials('netlify-token')
     }
 
     stages {
         stage('Build') {
-            agent{
-                docker{
+            agent {
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
@@ -67,7 +67,7 @@ pipeline {
                     }
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
                 }
@@ -75,8 +75,8 @@ pipeline {
         }
 
         stage('Deploy') {
-            agent{
-                docker{
+            agent {
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
@@ -90,6 +90,27 @@ pipeline {
                    node_modules/.bin/netlify status
                    node_modules/.bin/netlify deploy '--dir=build' --prod
                 '''
+            }
+        }
+        stage('Prod E2E') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = 'https://chic-concha-6a3340.netlify.app'
+            }
+            steps {
+                sh '''
+            npx playwright test --reporter=html
+        '''
+            }
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E', reportTitles: '', useWrapperFileDirectly: true])
+                }
             }
         }
     }
