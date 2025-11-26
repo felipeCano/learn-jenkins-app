@@ -8,16 +8,17 @@ pipeline {
     }
 
     stages {
-        stage('AWS'){
-            agent{
-                docker{
+        stage('AWS') {
+            agent {
+                docker {
                     image 'amazon/aws-cli'
                     args "--entrypoint=''"
                 }
             }
-            steps{
+            steps {
                 sh '''
                     aws --version
+                    aws s3 ls
                 '''
             }
         }
@@ -83,6 +84,14 @@ pipeline {
                             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
+                }
+            }
+        }
+
+        stage('Approval') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    input message: 'Do you wish to deploy to production? ', ok: 'Yes, I am sure!'
                 }
             }
         }
